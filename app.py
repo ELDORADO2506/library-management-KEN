@@ -58,7 +58,17 @@ def issued_to(copy_id):
     """, (copy_id,))
     return df['name'].iloc[0] if len(df)>0 else ""
 
-def ensure_default_locations():
+def def ensure_default_locations(n=45):
+    """Create Compartment 1..n in locations if they don't exist."""
+    with get_conn() as conn:
+        for i in range(1, n + 1):
+            # Use columns that exist in schema.sql: name, description
+            conn.execute(
+                "INSERT OR IGNORE INTO locations(name, description) VALUES(?, ?)",
+                (f"Compartment {i}", f"Shelf compartment #{i}")
+            )
+        conn.commit()
+:
     # Preload compartments 1..45 if empty
     df = fetch_df("SELECT COUNT(*) AS c FROM locations")
     if df['c'].iloc[0] == 0:
