@@ -96,7 +96,20 @@ page = st.sidebar.radio("Go to", [
 # One-time DB init
 if 'db_inited' not in st.session_state:
     init_db()
-    ensure_default_locations()
+    def ensure_default_locations(n=45):
+    """Create Compartment 1..n if they do not already exist."""
+    with sqlite3.connect(DB_PATH) as conn:
+        cur = conn.cursor()
+        for i in range(1, n + 1):
+            lid = f"Compartment {i}"   # location_id
+            nm  = lid                  # name (same text is fine)
+            # If it exists, do nothing. If not, create it.
+            cur.execute("""
+                INSERT OR IGNORE INTO locations(location_id, name, description)
+                VALUES (?, ?, ?)
+            """, (lid, nm, ""))
+        conn.commit()
+
     st.session_state['db_inited'] = True
 
 # ---------- Dashboard ----------
