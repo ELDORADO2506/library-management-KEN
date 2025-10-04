@@ -67,7 +67,6 @@ def ensure_default_locations(n=45):
                 (f"Compartment {i}", f"Shelf compartment #{i}")
             )
         conn.commit()
-:
     # Preload compartments 1..45 if empty
     df = fetch_df("SELECT COUNT(*) AS c FROM locations")
     if df['c'].iloc[0] == 0:
