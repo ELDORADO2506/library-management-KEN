@@ -57,25 +57,21 @@ def issued_to(copy_id):
         ORDER BY t.id DESC LIMIT 1
     """, (copy_id,))
     return df['name'].iloc[0] if len(df)>0 else ""
-
 def ensure_default_locations(n=45):
-    """Create Compartment 1..n in locations if they don't already exist."""
-    with get_conn() as conn:
+    """Create Compartment 1..n if they do not already exist."""
+    with sqlite3.connect(DB_PATH) as conn:
+        cur = conn.cursor()
         for i in range(1, n + 1):
-            conn.execute(
-                "INSERT OR IGNORE INTO locations(name, description) VALUES (?, ?)",
-                (f"Compartment {i}", f"Shelf compartment #{i}")
+            lid = f"Compartment {i}"   # location_id
+            nm  = lid                  # name
+            cur.execute(
+                """
+                INSERT OR IGNORE INTO locations (location_id, name, description)
+                VALUES (?, ?, ?)
+                """,
+                (lid, nm, ""),
             )
         conn.commit()
-    # Preload compartments 1..45 if empty
-    df = fetch_df("SELECT COUNT(*) AS c FROM locations")
-    if df['c'].iloc[0] == 0:
-        conn = get_conn()
-        with conn:
-            for i in range(1, 46):
-                conn.execute("INSERT INTO locations(location_id, description) VALUES(?,?)",
-                             (f"Compartment {i}", ""))
-        conn.close()
 
 # ---------- UI ----------
 st.set_page_config(page_title="KEN Library", layout="wide")
